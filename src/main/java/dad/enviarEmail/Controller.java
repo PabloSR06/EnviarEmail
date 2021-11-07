@@ -27,6 +27,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
+
 public class Controller implements Initializable {
 
     // MODEL
@@ -83,14 +84,7 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        // server.bind(serverField.textProperty());
-        // port.bind(portField.textProperty());
-        // emailFrom.bind(emailFromField.textProperty());
-        // emailTo.bind(emailToField.textProperty());
-        // subject.bind(subjectField.textProperty());
-        // ssl.bind(conexionCheck.selectedProperty());
-
-        
+        //bindings
         serverField.textProperty().bindBidirectional(model.serverProperty());
         portField.textProperty().bindBidirectional(model.portProperty());
         emailFromField.textProperty().bindBidirectional(model.emailFromProperty());
@@ -109,23 +103,39 @@ public class Controller implements Initializable {
             email.setHostName("smtp.gmail.com");
             email.setSmtpPort(465);
             email.setAuthenticator(new DefaultAuthenticator("dad.iesdpm@gmail.com", "Minikit0$"));
-            email.setSSLOnConnect(true);
+            email.setSSLOnConnect(false);
             email.setFrom("dad.iesdpm@gmail.com");
             email.setSubject("TestMail");
             email.setMsg("This is a test mail ... :-)");
             email.addTo("cettebrouquauhe-1209@yopmail.com");
 
-            email.setHostName(model.getServer().toString());
-            email.setSmtpPort(Integer.parseInt(model.getPort().toString()));
-            email.setAuthenticator(new DefaultAuthenticator(model.getEmailFrom().toString(), model.getpassword().toString()));
-            email.setSSLOnConnect(model.isSsl());
-            email.setFrom(model.getEmailFrom().toString());
-            email.setSubject(model.getSubject().toString());
-            email.setMsg(model.getMessage().toString());
-            email.addTo(model.getEmailTo());
+            // email.setHostName(model.getServer().toString());
+            // email.setSmtpPort(Integer.parseInt(model.getPort().toString()));
+            // email.setAuthenticator(new DefaultAuthenticator(model.getEmailFrom().toString(), model.getpassword().toString()));
+            // email.setSSLOnConnect(model.isSsl());
+            // email.setFrom(model.getEmailFrom().toString());
+            // email.setSubject(model.getSubject().toString());
+            // email.setMsg(model.getMessage().toString());
+            // email.addTo(model.getEmailTo());
 
         
+            model.emailToProperty().set("");
+            model.subjectProperty().set("");
+            model.messageProperty().set("");
 
+            if(email.isSendPartial() == true){
+
+                alerta = new Alert(AlertType.INFORMATION);
+                alerta.setTitle("Mensaje enviado");
+                alerta.setHeaderText("Mensaje enviado con éxito a '" + model.getEmailTo() + "'");
+                
+                alerta.showAndWait();
+
+                model.emailToProperty().set("");
+                model.subjectProperty().set("");
+                model.messageProperty().set("");
+
+            }
 
            
 
@@ -153,11 +163,13 @@ public class Controller implements Initializable {
     void onEmptyButton(ActionEvent event) {
         model.serverProperty().set("");
         model.portProperty().set("");
+        model.sslProperty().set(false);
         model.emailFromProperty().set("");
         model.passwordProperty().set("");
         model.emailToProperty().set("");
         model.subjectProperty().set("");
-        model.sslProperty().set(false);
+        model.messageProperty().set("");
+        
     }
 
     public HBox getView() {
