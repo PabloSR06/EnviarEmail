@@ -3,3 +3,4 @@ target
 .project
 .classpath
 .vscode/
+src/main/resources/fxml/2.fxml

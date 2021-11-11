@@ -9,6 +9,7 @@ import org.apache.commons.mail.Email;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.SimpleEmail;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -24,156 +25,143 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
-
 public class Controller implements Initializable {
 
-    // MODEL
+	// MODEL
 
-    private Model model = new Model();
+	private Model model = new Model();
 
-    // VIEW
-    @FXML
-    private Button closeButton;
+	// VIEW
+	@FXML
+	private Button closeButton;
 
-    @FXML
-    private CheckBox conexionCheck;
+	@FXML
+	private CheckBox conexionCheck;
 
-    @FXML
-    private TextField emailFromField;
+	@FXML
+	private TextField emailFromField;
 
-    @FXML
-    private TextField emailToField;
+	@FXML
+	private TextField emailToField;
 
-    @FXML
-    private Button emptyButton;
+	@FXML
+	private Button emptyButton;
 
-    @FXML
-    private TextArea messageButton;
+	@FXML
+	private TextArea messageButton;
 
-    @FXML
-    private TextField serverField;
+	@FXML
+	private TextField serverField;
 
-    @FXML
-    private PasswordField passwordField;
+	@FXML
+	private PasswordField passwordField;
 
-    @FXML
-    private TextField portField;
+	@FXML
+	private TextField portField;
 
-    @FXML
-    private Button sendButton;
+	@FXML
+	private Button sendButton;
 
-    @FXML
-    private TextField subjectField;
+	@FXML
+	private TextField subjectField;
 
-    @FXML
-    private HBox view;
+	@FXML
+	private GridPane view;
 
-    private Email email = new SimpleEmail();
+	private Alert alerta;
 
-    private Alert alerta;
+	public Controller() throws IOException {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/View.fxml"));
+		loader.setController(this);
+		loader.load();
+	}
 
-    public Controller() throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/View.fxml"));
-        loader.setController(this);
-        loader.load();
-    }
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+		// bindings
+		serverField.textProperty().bindBidirectional(model.serverProperty());
+		portField.textProperty().bindBidirectional(model.portProperty());
+		emailFromField.textProperty().bindBidirectional(model.emailFromProperty());
+		passwordField.textProperty().bindBidirectional(model.passwordProperty());
+		emailToField.textProperty().bindBidirectional(model.emailToProperty());
+		subjectField.textProperty().bindBidirectional(model.subjectProperty());
+		conexionCheck.selectedProperty().bindBidirectional(model.sslProperty());
 
-        //bindings
-        serverField.textProperty().bindBidirectional(model.serverProperty());
-        portField.textProperty().bindBidirectional(model.portProperty());
-        emailFromField.textProperty().bindBidirectional(model.emailFromProperty());
-        passwordField.textProperty().bindBidirectional(model.passwordProperty());
-        emailToField.textProperty().bindBidirectional(model.emailToProperty());
-        subjectField.textProperty().bindBidirectional(model.subjectProperty());
-        conexionCheck.selectedProperty().bindBidirectional(model.sslProperty());
+//		model.setServer("smtp.gmail.com");
+//		model.setSsl(true);
+//		model.setPort("465");
+//		model.setEmailFrom("dad.iesdpm@gmail.com");
+//		model.setEmailTo("jaxeigrobugu-5237@yopmail.com");
+//		model.setSubject("TestMail");
+//		model.setMessage("jaxeigrobugu-5237@yopmail.com");
 
-    }
+	}
 
-    @FXML
-    void onSendButton(ActionEvent event) {
-        try {
-            System.out.println(email.isSendPartial());
+	@FXML
+	void onSendButton(ActionEvent event) {
+		try {
 
-            email.setHostName("smtp.gmail.com");
-            email.setSmtpPort(465);
-            email.setAuthenticator(new DefaultAuthenticator("dad.iesdpm@gmail.com", "Minikit0$"));
-            email.setSSLOnConnect(false);
-            email.setFrom("dad.iesdpm@gmail.com");
-            email.setSubject("TestMail");
-            email.setMsg("This is a test mail ... :-)");
-            email.addTo("cettebrouquauhe-1209@yopmail.com");
+			Email email = new SimpleEmail();
 
-            // email.setHostName(model.getServer().toString());
-            // email.setSmtpPort(Integer.parseInt(model.getPort().toString()));
-            // email.setAuthenticator(new DefaultAuthenticator(model.getEmailFrom().toString(), model.getpassword().toString()));
-            // email.setSSLOnConnect(model.isSsl());
-            // email.setFrom(model.getEmailFrom().toString());
-            // email.setSubject(model.getSubject().toString());
-            // email.setMsg(model.getMessage().toString());
-            // email.addTo(model.getEmailTo());
+			email.setHostName(model.getServer().toString());
+			email.setSmtpPort(Integer.parseInt(model.getPort().toString()));
+			email.setAuthenticator(
+					new DefaultAuthenticator(model.getEmailFrom().toString(), model.getpassword().toString()));
+			email.setSSLOnConnect(model.isSsl());
+			email.setFrom(model.getEmailFrom().toString());
+			email.setSubject(model.getSubject().toString());
+			email.setMsg(model.getMessage().toString());
+			email.addTo(model.getEmailTo());
 
-        
-            model.emailToProperty().set("");
-            model.subjectProperty().set("");
-            model.messageProperty().set("");
+			email.send();
 
-            if(email.isSendPartial() == true){
+			alerta = new Alert(AlertType.INFORMATION);
+			alerta.setTitle("Mensaje enviado");
+			alerta.setHeaderText("Mensaje enviado con éxito a '" + model.getEmailTo() + "'");
 
-                alerta = new Alert(AlertType.INFORMATION);
-                alerta.setTitle("Mensaje enviado");
-                alerta.setHeaderText("Mensaje enviado con éxito a '" + model.getEmailTo() + "'");
-                
-                alerta.showAndWait();
+			alerta.showAndWait();
 
-                model.emailToProperty().set("");
-                model.subjectProperty().set("");
-                model.messageProperty().set("");
+			model.emailToProperty().set("");
+			model.subjectProperty().set("");
+			model.messageProperty().set("");
 
-            }
+		} catch (EmailException e) {
 
-           
+			alerta = new Alert(AlertType.ERROR);
+			alerta.setTitle("Error");
+			alerta.setHeaderText("No se pudo enviar el email");
+			alerta.setContentText(e.getMessage());
 
-            email.send();
-            
-            System.out.println(email.isSendPartial());
-        } catch (EmailException e) {
+			alerta.showAndWait();
+		}
 
-            alerta = new Alert(AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText("No se pudo enviar el email");
-            alerta.setContentText(e.getMessage());
+	}
 
-            alerta.showAndWait();
-        }
-        
-    }
+	@FXML
+	void onCloseButton(ActionEvent event) {
+		Platform.exit();
+	}
 
-    @FXML
-    void onCloseButton(ActionEvent event) {
+	@FXML
+	void onEmptyButton(ActionEvent event) {
+		model.serverProperty().set("");
+		model.portProperty().set("");
+		model.sslProperty().set(false);
+		model.emailFromProperty().set("");
+		model.passwordProperty().set("");
+		model.emailToProperty().set("");
+		model.subjectProperty().set("");
+		model.messageProperty().set("");
 
-    }
-    
-    @FXML
-    void onEmptyButton(ActionEvent event) {
-        model.serverProperty().set("");
-        model.portProperty().set("");
-        model.sslProperty().set(false);
-        model.emailFromProperty().set("");
-        model.passwordProperty().set("");
-        model.emailToProperty().set("");
-        model.subjectProperty().set("");
-        model.messageProperty().set("");
-        
-    }
+	}
 
-    public HBox getView() {
-        return view;
-    }
+	public GridPane getView() {
+		return view;
+	}
 
 }
