@@ -74,6 +74,8 @@ public class Controller implements Initializable {
 	private GridPane view;
 
 	private Alert alerta;
+	
+	private Task<Void> tarea;
 
 	
 
@@ -96,13 +98,15 @@ public class Controller implements Initializable {
 		subjectField.textProperty().bindBidirectional(model.subjectProperty());
 		conexionCheck.selectedProperty().bindBidirectional(model.sslProperty());
 
-//		model.setServer("smtp.gmail.com");
-//		model.setSsl(true);
-//		model.setPort("465");
-//		model.setEmailFrom("dad.iesdpm@gmail.com");
-//		model.setEmailTo("jaxeigrobugu-5237@yopmail.com");
-//		model.setSubject("TestMail");
-//		model.setMessage("sdafsdfaasf");
+		model.setServer("smtp.gmail.com");
+		model.setSsl(true);
+		model.setPort("465");
+		model.setEmailFrom("dad.iesdpm@gmail.com");
+		model.setEmailTo("jaxeigrobugu-5237@yopmail.com");
+		model.setSubject("TestMail");
+		model.setMessage("sdafsdfaasf");
+		
+		//sendButton.disableProperty().bind(tarea.runningProperty());
 
 	}
 
@@ -115,24 +119,43 @@ public class Controller implements Initializable {
 			email.setHostName(model.getServer().toString());
 			email.setSmtpPort(Integer.parseInt(model.getPort().toString()));
 			email.setAuthenticator(
-					new DefaultAuthenticator(model.getEmailFrom().toString(), model.getpassword().toString()));
+					new DefaultAuthenticator(model.getEmailFrom(), model.getpassword().toString()));
 			email.setSSLOnConnect(model.isSsl());
-			email.setFrom(model.getEmailFrom().toString());
-			email.setSubject(model.getSubject().toString());
-			email.setMsg(model.getMessage().toString());
+			email.setFrom(model.getEmailFrom());
+			email.setSubject(model.getSubject());
+			email.setMsg(model.getMessage());
 			email.addTo(model.getEmailTo());
 
-			email.send();
 
-			alerta = new Alert(AlertType.INFORMATION);
-			alerta.setTitle("Mensaje enviado");
-			alerta.setHeaderText("Mensaje enviado con éxito a '" + model.getEmailTo() + "'");
+			tarea = new Task<Void>() {
+	    		@Override
+	    		protected Void call() throws Exception {
+	    	    	email.send();
+	    			return null;
+	    		}
+			};
+			
+			tarea.setOnSucceeded(e -> {
+				alerta = new Alert(AlertType.INFORMATION);
+				alerta.setTitle("Mensaje enviado");
+				alerta.setHeaderText("Mensaje enviado con éxito a '" + model.getEmailTo() + "'");
+				alerta.showAndWait();
+				
+				model.emailToProperty().set("");
+				model.subjectProperty().set("");
+				model.messageProperty().set("");
+			});
 
-			alerta.showAndWait();
+			tarea.setOnFailed(e -> {
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Fallo");
+				alert.setHeaderText("Algo no fue bien");
+				alert.setContentText(e.getSource().getException().getMessage());
+				alert.showAndWait();
+			});
+			
+			new Thread(tarea).start();
 
-			model.emailToProperty().set("");
-			model.subjectProperty().set("");
-			model.messageProperty().set("");
 
 		} catch (EmailException e) {
 
@@ -142,6 +165,8 @@ public class Controller implements Initializable {
 			alerta.setContentText(e.getMessage());
 
 			alerta.showAndWait();
+			
+			
 		}
 
 	}
