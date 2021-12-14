@@ -14,6 +14,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -74,6 +75,8 @@ public class Controller implements Initializable {
 
 	private Alert alerta;
 
+	
+
 	public Controller() throws IOException {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/View.fxml"));
 		loader.setController(this);
@@ -89,6 +92,7 @@ public class Controller implements Initializable {
 		emailFromField.textProperty().bindBidirectional(model.emailFromProperty());
 		passwordField.textProperty().bindBidirectional(model.passwordProperty());
 		emailToField.textProperty().bindBidirectional(model.emailToProperty());
+		messageButton.textProperty().bindBidirectional(model.messageProperty());
 		subjectField.textProperty().bindBidirectional(model.subjectProperty());
 		conexionCheck.selectedProperty().bindBidirectional(model.sslProperty());
 
@@ -98,7 +102,7 @@ public class Controller implements Initializable {
 //		model.setEmailFrom("dad.iesdpm@gmail.com");
 //		model.setEmailTo("jaxeigrobugu-5237@yopmail.com");
 //		model.setSubject("TestMail");
-//		model.setMessage("jaxeigrobugu-5237@yopmail.com");
+//		model.setMessage("sdafsdfaasf");
 
 	}
 
