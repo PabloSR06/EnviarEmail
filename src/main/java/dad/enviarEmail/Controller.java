@@ -36,6 +36,8 @@ public class Controller implements Initializable {
 
 	private Model model = new Model();
 
+	private BooleanProperty ejecutando = new SimpleBooleanProperty();
+
 	// VIEW
 	@FXML
 	private Button closeButton;
@@ -74,10 +76,8 @@ public class Controller implements Initializable {
 	private GridPane view;
 
 	private Alert alerta;
-	
-	private Task<Void> tarea;
 
-	
+	private Task<Void> tarea;
 
 	public Controller() throws IOException {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/View.fxml"));
@@ -98,76 +98,65 @@ public class Controller implements Initializable {
 		subjectField.textProperty().bindBidirectional(model.subjectProperty());
 		conexionCheck.selectedProperty().bindBidirectional(model.sslProperty());
 
-		model.setServer("smtp.gmail.com");
-		model.setSsl(true);
-		model.setPort("465");
-		model.setEmailFrom("dad.iesdpm@gmail.com");
-		model.setEmailTo("jaxeigrobugu-5237@yopmail.com");
-		model.setSubject("TestMail");
-		model.setMessage("sdafsdfaasf");
-		
-		//sendButton.disableProperty().bind(tarea.runningProperty());
+//		model.setServer("smtp.gmail.com");
+//		model.setSsl(true);
+//		model.setPort("465");
+//		model.setEmailFrom("dad.iesdpm@gmail.com");
+//		model.setEmailTo("jaxeigrobugu-5237@yopmail.com");
+//		model.setSubject("TestMail");
+//		model.setMessage("sdafsdfaasf");
+
+		sendButton.disableProperty().bind(ejecutando);
 
 	}
 
 	@FXML
 	void onSendButton(ActionEvent event) {
-		try {
 
-			Email email = new SimpleEmail();
+		Email email = new SimpleEmail();
 
-			email.setHostName(model.getServer().toString());
-			email.setSmtpPort(Integer.parseInt(model.getPort().toString()));
-			email.setAuthenticator(
-					new DefaultAuthenticator(model.getEmailFrom(), model.getpassword().toString()));
-			email.setSSLOnConnect(model.isSsl());
-			email.setFrom(model.getEmailFrom());
-			email.setSubject(model.getSubject());
-			email.setMsg(model.getMessage());
-			email.addTo(model.getEmailTo());
+		email.setHostName(model.getServer().toString());
+		email.setSmtpPort(Integer.parseInt(model.getPort().toString()));
+		email.setAuthenticator(new DefaultAuthenticator(model.getEmailFrom(), model.getpassword().toString()));
+		email.setSSLOnConnect(model.isSsl());
 
+		
 
-			tarea = new Task<Void>() {
-	    		@Override
-	    		protected Void call() throws Exception {
-	    	    	email.send();
-	    			return null;
-	    		}
-			};
-			
-			tarea.setOnSucceeded(e -> {
-				alerta = new Alert(AlertType.INFORMATION);
-				alerta.setTitle("Mensaje enviado");
-				alerta.setHeaderText("Mensaje enviado con éxito a '" + model.getEmailTo() + "'");
-				alerta.showAndWait();
-				
-				model.emailToProperty().set("");
-				model.subjectProperty().set("");
-				model.messageProperty().set("");
-			});
+		tarea = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				email.setFrom(model.getEmailFrom());
 
-			tarea.setOnFailed(e -> {
-				Alert alert = new Alert(AlertType.ERROR);
-				alert.setTitle("Fallo");
-				alert.setHeaderText("Algo no fue bien");
-				alert.setContentText(e.getSource().getException().getMessage());
-				alert.showAndWait();
-			});
-			
-			new Thread(tarea).start();
+				email.setSubject(model.getSubject());
+				email.setMsg(model.getMessage());
+				email.addTo(model.getEmailTo());
+				email.send();
+				return null;
+			}
+		};
 
-
-		} catch (EmailException e) {
-
-			alerta = new Alert(AlertType.ERROR);
-			alerta.setTitle("Error");
-			alerta.setHeaderText("No se pudo enviar el email");
-			alerta.setContentText(e.getMessage());
-
+		tarea.setOnSucceeded(e -> {
+			alerta = new Alert(AlertType.INFORMATION);
+			alerta.setTitle("Mensaje enviado");
+			alerta.setHeaderText("Mensaje enviado con éxito a '" + model.getEmailTo() + "'");
 			alerta.showAndWait();
-			
-			
-		}
+
+			model.emailToProperty().set("");
+			model.subjectProperty().set("");
+			model.messageProperty().set("");
+		});
+
+		tarea.setOnFailed(e -> {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Fallo");
+			alert.setHeaderText("Algo no fue bien");
+			alert.setContentText(e.getSource().getException().getMessage());
+			alert.showAndWait();
+		});
+
+		ejecutando.bind(tarea.runningProperty());
+
+		new Thread(tarea).start();
 
 	}
 
